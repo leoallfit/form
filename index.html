@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALLFIT — Coaching 1:1</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #080f1e; --bg-input: #0e1c35; --bg-hover: #122240;
+    --border: #1a2f52; --border-focus: #3b7dd8;
+    --text: #d6e4f7; --muted: #5a7aaa; --label: #6b8fc4;
+    --accent: #4fa3e8; --btn-bg: #d6e4f7; --btn-text: #080f1e;
+    --error: #e05555;
+  }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 16px; -webkit-font-smoothing: antialiased; }
+  .app { min-height: 100vh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; padding: 0 24px 80px; }
+
+  .landing { display: flex; flex-direction: column; justify-content: space-between; min-height: 100vh; padding: 48px 0 32px; }
+  .brand-name { font-family: 'DM Serif Display', serif; font-size: 28px; }
+  .brand-sub { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-top: 4px; }
+  .landing-body { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 48px 0; }
+  .landing-body p { font-size: 15px; color: var(--muted); margin-bottom: 16px; line-height: 1.7; }
+  .landing-body strong { color: var(--text); font-weight: 600; }
+  .divider { width: 40px; height: 1px; background: var(--border); margin: 20px 0; }
+  .privacy { text-align: center; font-size: 12px; color: var(--muted); margin-top: 14px; }
+
+  .step { display: none; flex-direction: column; min-height: 100vh; padding: 32px 0; animation: fadeIn 0.25s ease; }
+  .step.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .progress-row { display: flex; align-items: center; gap: 14px; margin-bottom: 36px; }
+  .back-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .progress-bar { flex: 1; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; }
+  .step-count { font-size: 13px; color: var(--muted); flex-shrink: 0; }
+
+  .step-content { flex: 1; }
+  .step-title { font-size: 25px; font-weight: 700; line-height: 1.25; margin-bottom: 6px; letter-spacing: -0.5px; }
+  .step-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+
+  .field { margin-bottom: 20px; }
+  .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--label); margin-bottom: 8px; display: block; }
+  input[type="text"], input[type="number"], input[type="tel"], select, textarea {
+    width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: 12px; padding: 15px 16px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none;
+    transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  input:focus, select:focus, textarea:focus { border-color: var(--border-focus); }
+  input.error, select.error, textarea.error { border-color: var(--error) !important; }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7aaa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 16px center; padding-right: 42px; cursor: pointer;
+  }
+  select option { background: #0e1c35; }
+  textarea { min-height: 140px; resize: none; line-height: 1.6; }
+
+  .phone-row { display: flex; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--bg-input); transition: border-color 0.2s; }
+  .phone-row:focus-within { border-color: var(--border-focus); }
+  .phone-row.error { border-color: var(--error) !important; }
+  .phone-prefix { display: flex; align-items: center; gap: 6px; padding: 0 14px; font-size: 14px; border-right: 1px solid var(--border); white-space: nowrap; }
+  .phone-input { flex: 1; border: none !important; border-radius: 0 !important; background: transparent !important; }
+
+  .options-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+  .option-card { background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 15px 16px; font-size: 15px; cursor: pointer; transition: all 0.15s; user-select: none; }
+  .option-card:hover { background: var(--bg-hover); border-color: var(--border-focus); }
+  .option-card.selected { background: #0e2a4d; border-color: var(--accent); color: var(--accent); }
+  .options-error .option-card { border-color: var(--error); }
+
+  .number-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 8px; }
+  .number-btn { aspect-ratio: 1; background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+  .number-btn:hover { background: var(--bg-hover); border-color: var(--border-focus); }
+  .number-btn.selected { background: #0e2a4d; border-color: var(--accent); color: var(--accent); }
+  .numbers-error .number-btn { border-color: var(--error); }
+
+  .error-msg { font-size: 12px; color: var(--error); margin-top: 6px; display: none; }
+  .error-msg.show { display: block; }
+
+  .btn-primary { width: 100%; padding: 18px; background: var(--btn-bg); color: var(--btn-text); border: none; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-bottom { margin-top: auto; padding-top: 28px; }
+
+  .success-screen { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; padding: 48px 0; }
+  .success-screen.active { display: flex; animation: fadeIn 0.4s ease; }
+  .success-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-focus); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; font-size: 28px; }
+  .success-title { font-size: 26px; font-weight: 700; margin-bottom: 12px; }
+  .success-text { font-size: 15px; color: var(--muted); line-height: 1.7; max-width: 300px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- LANDING -->
+  <div class="landing" id="landing">
+    <div>
+      <div class="brand-name">Leo Massud</div>
+      <div class="brand-sub">Coaching 1:1 · ALLFIT</div>
+    </div>
+    <div class="landing-body">
+      <p>Si estás acá es porque ya entrenás, pero <strong>el espejo todavía no refleja el esfuerzo que ponés.</strong></p>
+      <div class="divider"></div>
+      <p>Entiendo que tu vida no para para que puedas entrenar. Por eso mi trabajo es que <strong>el plan se adapte a vos y no al revés.</strong></p>
+      <p>Si estás listo para comprometerte con tu cambio con las mismas ganas que yo lo haré con tu planificación, <strong>estamos listos para empezar.</strong></p>
+    </div>
+    <div>
+      <button class="btn-primary" onclick="startForm()">Empezar</button>
+      <p class="privacy">Tu información es privada y no será compartida con terceros.</p>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step" id="step-1">
+    <div class="progress-row">
+      <button class="back-btn" onclick="goBack(1)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="progress-bar"><div class="progress-fill" style="width:14.28%"></div></div>
+      <span class="step-count">1/7</span>
+    </div>
+    <div class="step-content">
+      <h2 class="step-title">Primero, contame sobre vos</h2>
+      <div class="field">
+        <label class="field-label">Nombre completo</label>
+        <input type="text" id="nombre" placeholder="Tu nombre y apellido">
+        <div class="error-msg" id="err-nombre">Ingresá tu nombre completo.</div>
+      </div>
+      <div class="field">
+        <label class="field-label">Edad</label>
+        <input type="number" id="edad" placeholder="Tu edad" min="18" max="99">
+        <div class="error-msg" id="err-edad">Ingresá tu edad.</div>
+      </div>
+      <div class="field">
+        <label class="field-label">Nacionalidad</label>
+        <select id="nacionalidad">
+          <option value="" disabled selected>Seleccioná tu nacionalidad</option>
+          <option>Argentina</option><option>Uruguay</option><option>Chile</option>
+          <option>Paraguay</option><option>Bolivia</option><option>Brasil</option>
+          <option>Colombia</option><option>México</option><option>España</option><option>Otra</option>
+        </select>
+        <div class="error-msg" id="err-nac">Seleccioná tu nacionalidad.</div>
+      </div>
+    </div>
+    <div class="btn-bottom"><button class="btn-primary" onclick="validateStep1()">Continuar →</button></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step" id="step-2">
+    <div class="progress-row">
+      <button class="back-btn" onclick="goBack(2)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="progress-bar"><div class="progress-fill" style="width:28.57%"></div></div>
+      <span class="step-count">2/7</span>
+    </div>
+    <div class="step-content">
+      <h2 class="step-title">¿A qué te dedicás y cómo te encuentro?</h2>
+      <p class="step-sub">Todos los campos son obligatorios.</p>
+      <div class="field">
+        <label class="field-label">Ocupación</label>
+        <input type="text" id="ocupacion" placeholder="Tu ocupación">
+        <div class="error-msg" id="err-ocup">Ingresá tu ocupación.</div>
+      </div>
+      <div class="field">
+        <label class="field-label">WhatsApp</label>
+        <div class="phone-row" id="phone-row">
+          <div class="phone-prefix"><span>🇦🇷</span> +54</div>
+          <input type="tel" id="whatsapp" class="phone-input" placeholder="9 11 1234 5678">
+        </div>
+        <div class="error-msg" id="err-wa">Ingresá tu número de WhatsApp.</div>
+      </div>
+      <div class="field">
+        <label class="field-label">Instagram</label>
+        <input type="text" id="instagram" placeholder="Tu usuario (sin @)">
+        <div class="error-msg" id="err-ig">Ingresá tu usuario de Instagram.</div>
+      </div>
+    </div>
+    <div class="btn-bottom"><button class="btn-primary" onclick="validateStep2()">Continuar →</button></div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step" id="step-3">
+    <div class="progress-row">
+      <button class="back-btn" onclick="goBack(3)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="progress-bar"><div class="progress-fill" style="width:42.85%"></div></div>
+      <span class="step-count">3/7</span>
+    </div>
+    <div class="step-content">
+      <h2 class="step-title">Para que el programa sea efectivo, nos enfocamos 100% en el desarrollo de tejido muscular. ¿Estás de acuerdo con priorizar este objetivo?</h2>
+      <div class="options-list" id="opts-objetivo">
+        <div class="option-card" data-group="objetivo" data-value="volumen" onclick="selectOption(this)">Sí, estoy listo para ganar volumen y fuerza.</div>
+        <div class="option-card" data-group="objetivo" data-value="camino" onclick="selectOption(this)">Sí, entiendo que este es el camino para cambiar mi físico.</div>
+      </div>
+      <div class="error-msg" id="err-objetivo">Seleccioná una opción para continuar.</div>
+    </div>
+    <div class="btn-bottom"><button class="btn-primary" onclick="validateStep3()">Continuar →</button></div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step" id="step-4">
+    <div class="progress-row">
+      <button class="back-btn" onclick="goBack(4)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="progress-bar"><div class="progress-fill" style="width:57.14%"></div></div>
+      <span class="step-count">4/7</span>
+    </div>
+    <div class="step-content">
+      <h2 class="step-title">¿Por qué creés que puedo ayudarte?</h2>
+      <p class="step-sub">Contanos con tus palabras. No hay respuesta correcta o incorrecta.</p>
+      <div class="field">
+        <label class="field-label">Tu respuesta</label>
+        <textarea id="porque-yo" placeholder="Escribí tu respuesta acá..."></textarea>
+        <div class="error-msg" id="err-porque">Desarrollá tu respuesta un poco más (mínimo 3 palabras).</div>
+      </div>
+    </div>
+    <div class="btn-bottom"><button class="btn-primary" onclick="validateStep4()">Continuar →</button></div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step" id="step-5">
+    <div class="progress-row">
+      <button class="back-btn" onclick="goBack(5)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="progress-bar"><div class="progress-fill" style="width:71.42%"></div></div>
+      <span class="step-count">5/7</span>
+    </div>
+    <div class="step-content">
+      <h2 class="step-title">¿Por qué es importante para vos lograrlo?</h2>
+      <p class="step-sub">Contanos con tus palabras. No hay respuesta correcta o incorrecta.</p>
+      <div class="field">
+        <label class="field-label">Tu respuesta</label>
+        <textarea id="por-que-importante" placeholder="Escribí tu respuesta acá..."></textarea>
+        <div class="error-msg" id="err-importante">Desarrollá tu respuesta un poco más (mínimo 3 palabras).</div>
+      </div>
+    </div>
+    <div class="btn-bottom"><button class="btn-primary" onclick="validateStep5()">Continuar →</button></div>
+  </div>
+
+  <!-- STEP 6 -->
+  <div class="step" id="step-6">
+    <div class="progress-row">
+      <button class="back-btn" onclick="goBack(6)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="progress-bar"><div class="progress-fill" style="width:85.71%"></div></div>
+      <span class="step-count">6/7</span>
+    </div>
+    <div class="step-content">
+      <h2 class="step-title">¿Cuánta experiencia tenés en el gimnasio?</h2>
+      <div class="options-list" id="opts-experiencia">
+        <div class="option-card" data-group="experiencia" data-value="ninguna" onclick="selectOption(this)">Ninguna</div>
+        <div class="option-card" data-group="experiencia" data-value="menos1" onclick="selectOption(this)">Menos de 1 año</div>
+        <div class="option-card" data-group="experiencia" data-value="1a2" onclick="selectOption(this)">1 a 2 años</div>
+        <div class="option-card" data-group="experiencia" data-value="mas2" onclick="selectOption(this)">+ de 2 años</div>
+      </div>
+      <div class="error-msg" id="err-exp">Seleccioná una opción para continuar.</div>
+    </div>
+    <div class="btn-bottom"><button class="btn-primary" onclick="validateStep6()">Continuar →</button></div>
+  </div>
+
+  <!-- STEP 7 -->
+  <div class="step" id="step-7">
+    <div class="progress-row">
+      <button class="back-btn" onclick="goBack(7)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      <span class="step-count">7/7</span>
+    </div>
+    <div class="step-content">
+      <h2 class="step-title">¿Cuál es tu nivel de compromiso?</h2>
+      <p class="step-sub">1 = mínimo · 10 = máximo</p>
+      <div class="number-grid" id="commitment-grid">
+        <button class="number-btn" onclick="selectNumber(this,1)">1</button>
+        <button class="number-btn" onclick="selectNumber(this,2)">2</button>
+        <button class="number-btn" onclick="selectNumber(this,3)">3</button>
+        <button class="number-btn" onclick="selectNumber(this,4)">4</button>
+        <button class="number-btn" onclick="selectNumber(this,5)">5</button>
+        <button class="number-btn" onclick="selectNumber(this,6)">6</button>
+        <button class="number-btn" onclick="selectNumber(this,7)">7</button>
+        <button class="number-btn" onclick="selectNumber(this,8)">8</button>
+        <button class="number-btn" onclick="selectNumber(this,9)">9</button>
+        <button class="number-btn" onclick="selectNumber(this,10)">10</button>
+      </div>
+      <div class="error-msg" id="err-comp">Seleccioná tu nivel de compromiso.</div>
+    </div>
+    <div class="btn-bottom"><button class="btn-primary" onclick="validateStep7()">Enviar</button></div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="success">
+    <div class="success-icon">✓</div>
+    <h2 class="success-title">¡Recibido!</h2>
+    <p class="success-text">Gracias por completar el formulario. Me contacto con vos en las próximas 24hs por WhatsApp.</p>
+  </div>
+
+</div>
+<script>
+  const formData = {};
+  let commitment = null;
+
+  function startForm() {
+    document.getElementById('landing').style.display = 'none';
+    showStep(1);
+  }
+
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById('step-' + n);
+    if (el) { el.classList.add('active'); window.scrollTo(0,0); }
+  }
+
+  function goBack(n) {
+    if (n === 1) { document.getElementById('step-1').classList.remove('active'); document.getElementById('landing').style.display = 'flex'; }
+    else showStep(n - 1);
+  }
+
+  function err(id, show) {
+    const el = document.getElementById(id);
+    if (el) el.classList[show ? 'add' : 'remove']('show');
+  }
+
+  function mark(id, hasErr) {
+    const el = document.getElementById(id);
+    if (el) el.classList[hasErr ? 'add' : 'remove']('error');
+  }
+
+  function enoughWords(text) {
+    return text.trim().split(/\s+/).filter(w => w).length >= 3;
+  }
+
+  function selectOption(el) {
+    const g = el.dataset.group;
+    document.querySelectorAll('[data-group="'+g+'"]').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function selectNumber(el, val) {
+    document.querySelectorAll('.number-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    commitment = val;
+  }
+
+  function validateStep1() {
+    const n = document.getElementById('nombre').value.trim();
+    const e = document.getElementById('edad').value.trim();
+    const na = document.getElementById('nacionalidad').value;
+    mark('nombre', !n); err('err-nombre', !n);
+    mark('edad', !e); err('err-edad', !e);
+    mark('nacionalidad', !na); err('err-nac', !na);
+    if (!n || !e || !na) return;
+    formData.nombre = n; formData.edad = e; formData.nacionalidad = na;
+    showStep(2);
+  }
+
+  function validateStep2() {
+    const o = document.getElementById('ocupacion').value.trim();
+    const w = document.getElementById('whatsapp').value.trim();
+    const i = document.getElementById('instagram').value.trim();
+    mark('ocupacion', !o); err('err-ocup', !o);
+    document.getElementById('phone-row').classList[!w ? 'add' : 'remove']('error'); err('err-wa', !w);
+    mark('instagram', !i); err('err-ig', !i);
+    if (!o || !w || !i) return;
+    formData.ocupacion = o; formData.whatsapp = '+54 ' + w; formData.instagram = i;
+    showStep(3);
+  }
+
+  function validateStep3() {
+    const sel = document.querySelector('[data-group="objetivo"].selected');
+    const list = document.getElementById('opts-objetivo');
+    list.classList[!sel ? 'add' : 'remove']('options-error');
+    err('err-objetivo', !sel);
+    if (!sel) return;
+    formData.objetivo = sel.dataset.value;
+    showStep(4);
+  }
+
+  function validateStep4() {
+    const v = document.getElementById('porque-yo').value;
+    const ok = enoughWords(v);
+    mark('porque-yo', !ok); err('err-porque', !ok);
+    if (!ok) return;
+    formData.porqueYo = v.trim();
+    showStep(5);
+  }
+
+  function validateStep5() {
+    const v = document.getElementById('por-que-importante').value;
+    const ok = enoughWords(v);
+    mark('por-que-importante', !ok); err('err-importante', !ok);
+    if (!ok) return;
+    formData.porqueImportante = v.trim();
+    showStep(6);
+  }
+
+  function validateStep6() {
+    const sel = document.querySelector('[data-group="experiencia"].selected');
+    const list = document.getElementById('opts-experiencia');
+    list.classList[!sel ? 'add' : 'remove']('options-error');
+    err('err-exp', !sel);
+    if (!sel) return;
+    formData.experiencia = sel.dataset.value;
+    showStep(7);
+  }
+
+  function validateStep7() {
+    const grid = document.getElementById('commitment-grid');
+    grid.classList[!commitment ? 'add' : 'remove']('numbers-error');
+    err('err-comp', !commitment);
+    if (!commitment) return;
+    formData.compromiso = commitment;
+    submit();
+  }
+
+  async function submit() {
+    const sheetsURL = 'https://script.google.com/macros/s/AKfycbxjSM4pIeJacZbdkU5Gh36j_I3EsHMYdvcR56idgc_K8NKzuNUfLOYCXSeeV3ToiybYcQ/exec';
+    try {
+      await fetch('https://formspree.io/f/maqadbrj', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+    } catch(e) {}
+    try {
+      await fetch(sheetsURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+    } catch(e) {}
+    document.getElementById('step-7').classList.remove('active');
+    document.getElementById('success').classList.add('active');
+  }
+</script>
+</body>
+</html>
